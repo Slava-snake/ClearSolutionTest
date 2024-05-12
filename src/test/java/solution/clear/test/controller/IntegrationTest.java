@@ -25,7 +25,7 @@ import solution.clear.test.entity.User;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class UserControllerTest {
+class IntegrationTest {
 
     @Value("${ageLimit}")
     private long ageLimit;
