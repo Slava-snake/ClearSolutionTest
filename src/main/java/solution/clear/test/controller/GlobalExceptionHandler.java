@@ -15,7 +15,6 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import solution.clear.test.exception.AgeNotValidException;
-import solution.clear.test.exception.BadRangeException;
 import solution.clear.test.exception.UserNotFoundException;
 
 @RestControllerAdvice
@@ -32,8 +31,8 @@ public class GlobalExceptionHandler {
     }
     
     
-    @ExceptionHandler( {AgeNotValidException.class, BadRangeException.class,
-                        JsonPatchException.class, JsonProcessingException.class} )
+    @ExceptionHandler( {AgeNotValidException.class, JsonPatchException.class, 
+        JsonProcessingException.class} )
     public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException ex) {
         Map<String, String> result = new HashMap<>();
         result.put(REQUEST_EXCEPTION, ex.getMessage());

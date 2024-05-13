@@ -23,6 +23,11 @@ public class UserRepository {
     private List<User> users = new ArrayList<>();
     
     
+    public void set(List<User> newUsers) {
+        users = newUsers;
+    }
+    
+    
     protected int getIndexById(long id) {
         int index = -1;
         for(User user : users) {

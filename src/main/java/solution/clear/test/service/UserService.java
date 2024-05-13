@@ -10,13 +10,15 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+import solution.clear.test.annotation.ConsistentDateRange;
 import solution.clear.test.entity.User;
 import solution.clear.test.exception.AgeNotValidException;
-import solution.clear.test.exception.BadRangeException;
 import solution.clear.test.exception.UserNotFoundException;
 import solution.clear.test.repository.UserRepository;
 
 @Service
+@Validated
 public class UserService {
 
     @Autowired
@@ -32,7 +34,7 @@ public class UserService {
         if (userRepository.notExists(id))
             throw new UserNotFoundException(id);
     }
-    
+
     
     protected void ageValid(LocalDate birthday) {
         if (birthday.plusYears(ageLimit).isAfter(LocalDate.now())) 
@@ -41,8 +43,8 @@ public class UserService {
     
     
     public User getUser(long id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) 
+        User user;
+        if (id <= 0 || (user = userRepository.findById(id).orElse(null)) == null) 
             throw new UserNotFoundException(id);
         return user;
     }
@@ -92,7 +94,9 @@ public class UserService {
     
     public User patch(long id, JsonPatch patch) throws JsonPatchException, JsonProcessingException {
         JsonNode patched = patch.apply(objectMapper.convertValue(getUser(id), JsonNode.class));
-        return userRepository.save(objectMapper.treeToValue(patched, User.class));
+        User user = objectMapper.treeToValue(patched, User.class);
+        ageValid(user.getBirthday());
+        return userRepository.save(user);
     }
     
     
@@ -102,11 +106,10 @@ public class UserService {
     }
     
     
+    @ConsistentDateRange
     public List<User> search(LocalDate from, LocalDate to) {
         if (from == null && to == null)
             return userRepository.findAll();
-        if (from != null && to != null && from.isAfter(to))
-            throw new BadRangeException(from, to);
         if (from == null)
             from = LocalDate.MIN;
         if (to == null)

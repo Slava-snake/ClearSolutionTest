@@ -229,14 +229,14 @@ class IntegrationTest {
                     .andExpect(content().contentType("application/json"))
                     .andReturn().getResponse().getContentAsString());
         assertEquals(users, responsedAll);
-        List<User> responsedFirst3 = json2userList(
+        List<User> responsed2 = json2userList(
                 mvc.perform(get(REQUEST_MAPPING)
                             .param("to", GOOD_BIRTHDAY))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentType("application/json"))
                     .andReturn().getResponse().getContentAsString());
-        assertEquals(users.subList(0, 3), responsedFirst3);
+        assertEquals(List.of(users.get(0), users.get(2)), responsed2);
         List<User> responsedLast = json2userList(
                 mvc.perform(get(REQUEST_MAPPING)
                             .param("from", getLimitBirthday().toString()))
@@ -247,7 +247,7 @@ class IntegrationTest {
         assertEquals(users.subList(3, 4), responsedLast);
         responsedAll = json2userList(
                 mvc.perform(get(REQUEST_MAPPING)
-                            .param("from", GOOD_BIRTHDAY)
+                            .param("from", "0001-01-01")
                             .param("to", getLimitBirthday().toString()))
                     .andDo(print())
                     .andExpect(status().isOk())
