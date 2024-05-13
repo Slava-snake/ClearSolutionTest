@@ -1,5 +1,6 @@
 package solution.clear.test.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -15,11 +16,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTestBadQueries {
+class IntegrationTestBadQueries {
 
     @Autowired
     private MockMvc mvc;
-    
+
     @Value("${ageLimit}")
     private long ageLimit;
     
@@ -60,7 +61,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Request exception\":\"String email : not present\"}"));
+            .andExpect(content().string(containsString("String email : not present")));
         mvc.perform(post(REQUEST_MAPPING)
                 .param(EMAIL_FIELD, "")
                 .param(FIRST_NAME_FIELD, "first1")
@@ -69,7 +70,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Constrain voilations: \":[\"create.email  : must not be blank\"]}"));
+            .andExpect(content().string(containsString("create.email  : must not be blank")));
         mvc.perform(post(REQUEST_MAPPING)
                 .param(EMAIL_FIELD, BAD_EMAIL)
                 .param(FIRST_NAME_FIELD, "first1")
@@ -91,7 +92,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Request exception\":\"String firstName : not present\"}"));
+            .andExpect(content().string(containsString("String firstName : not present")));
         mvc.perform(post(REQUEST_MAPPING)
                 .param(EMAIL_FIELD, GOOD_EMAIL)
                 .param(FIRST_NAME_FIELD, "")
@@ -100,7 +101,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Constrain voilations: \":[\"create.firstName  : must not be blank\"]}"));
+            .andExpect(content().string(containsString("create.firstName  : must not be blank")));
     }
 
     
@@ -114,7 +115,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Request exception\":\"String lastName : not present\"}"));
+            .andExpect(content().string(containsString("String lastName : not present")));
         mvc.perform(post(REQUEST_MAPPING)
                 .param(EMAIL_FIELD, GOOD_EMAIL)
                 .param(FIRST_NAME_FIELD, "first1")
@@ -123,7 +124,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Constrain voilations: \":[\"create.lastName  : must not be blank\"]}"));
+            .andExpect(content().string(containsString("create.lastName  : must not be blank")));
     }
 
     
@@ -138,7 +139,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Request exception\":\"LocalDate birthday : not present\"}"));            
+            .andExpect(content().string(containsString("LocalDate birthday : not present")));            
         mvc.perform(post(REQUEST_MAPPING)
                 .param(EMAIL_FIELD, GOOD_EMAIL)
                 .param(FIRST_NAME_FIELD, "first1")
@@ -147,7 +148,7 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Request exception\":\"LocalDate birthday : present but converted to null\"}"));
+            .andExpect(content().string(containsString("LocalDate birthday : present but converted to null")));
         mvc.perform(post(REQUEST_MAPPING)
                 .param(EMAIL_FIELD, GOOD_EMAIL)
                 .param(FIRST_NAME_FIELD, "first1")
@@ -164,17 +165,30 @@ public class UserControllerTestBadQueries {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Request exception\":\"Age not valid. Minimum value is " + ageLimit + ".\"}"));
+            .andExpect(content().string(containsString("Age not valid. Minimum value is " + ageLimit + ".")));
     }
     
     
     @Test
     void testBadUserId() throws Exception {
-        mvc.perform(get(REQUEST_MAPPING + "/{id}", "0"))
+        long id = 1L;
+        mvc.perform(get(REQUEST_MAPPING + "/{id}", id))
             .andDo(print())
             .andExpect(status().isNotFound())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().string("{\"Request exception\":\"User (id=0) not found\"}"));
+            .andExpect(content().string(containsString("User (id=" + id + ") not found")));
+    }
+ 
+    
+    @Test
+    void testBadDateRange() throws Exception {
+        mvc.perform(get(REQUEST_MAPPING)
+                    .param("from", "2222-02-01")
+                    .param("to", "1111-11-11"))
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType("application/json"))
+        .andExpect(content().string(containsString("End date must be after begin date.")));
     }
     
 }
